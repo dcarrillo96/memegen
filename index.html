@@ -1,4 +1,4 @@
-DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
@@ -138,14 +138,6 @@ DOCTYPE html>
       background: #1d4ed8;
     }
     
-    /* Download options grid */
-    .download-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    
     /* Preview area */
     .preview-container {
       flex: 1;
@@ -181,14 +173,14 @@ DOCTYPE html>
       display: flex;
       justify-content: center;
       align-items: center;
-      max-width: 100%;
-      max-height: 100%;
+      width: 100%;
+      height: 100%;
     }
     
     /* Video element */
     .video-element {
-      max-width: 100%;
-      max-height: 100%;
+      width: 100%; /* Fill the frame width */
+      height: auto; /* Maintain aspect ratio */
       display: block;
     }
     
@@ -237,18 +229,15 @@ DOCTYPE html>
   <script type="text/babel">
     // Main app component
     const VideoOverlayApp = () => {
-      // State variables
       const [videoFile, setVideoFile] = React.useState(null);
-      const [videoFileName, setVideoFileName] = React.useState("");
       const [text, setText] = React.useState('Sample Overlay Text');
       const [textColor, setTextColor] = React.useState('#FFFFFF');
       const [textSize, setTextSize] = React.useState(17);
-      const [logoSize, setLogoSize] = React.useState(200); // Default to 200px
+      const [logoSize, setLogoSize] = React.useState(120);
       const [showControls, setShowControls] = React.useState(true);
       const [videoHeight, setVideoHeight] = React.useState(0);
       const [videoWidth, setVideoWidth] = React.useState(0);
       
-      // Refs
       const videoRef = React.useRef(null);
       const frameRef = React.useRef(null);
       
@@ -276,7 +265,6 @@ DOCTYPE html>
       const handleVideoUpload = (e) => {
         const file = e.target.files[0];
         if (file) {
-          setVideoFileName(file.name);
           setVideoFile(URL.createObjectURL(file));
         }
       };
@@ -308,25 +296,17 @@ DOCTYPE html>
         }, 100);
       };
       
-      // Download original video
-      const downloadVideo = () => {
-        if (!videoFile) {
-          alert("Please upload a video first.");
-          return;
-        }
-        
-        const link = document.createElement('a');
-        link.href = videoFile;
-        link.download = videoFileName || "video.mp4";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      };
-      
       // Custom component for the video with overlays
       const VideoWithOverlays = () => {
         return (
-          <div style={{ position: 'relative' }}>
+          <div style={{ 
+            position: 'relative',
+            width: '100%', 
+            height: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
             {/* The video element */}
             <video 
               ref={videoRef}
@@ -336,6 +316,10 @@ DOCTYPE html>
               muted 
               loop
               autoPlay
+              style={{
+                width: '100%',
+                objectFit: 'contain' 
+              }}
             />
             
             {/* Text overlay - exactly 10px above the video */}
@@ -347,7 +331,7 @@ DOCTYPE html>
                   textAlign: 'center',
                   fontWeight: 'bold',
                   color: textColor,
-                  fontSize: ${textSize}px,
+                  fontSize: `${textSize}px`,
                   textShadow: '1px 1px 3px rgba(0,0,0,0.8)',
                   bottom: '100%',
                   marginBottom: '10px', // Exactly 10px above video
@@ -374,7 +358,7 @@ DOCTYPE html>
             >
               <img 
                 src={logo}
-                style={{ width: ${logoSize}px }}
+                style={{ width: `${logoSize}px` }}
                 alt="Logo" 
                 onError={(e) => {
                   console.error('Logo failed to load');
@@ -446,50 +430,28 @@ DOCTYPE html>
               <label className="input-label">Logo Size: {logoSize}px</label>
               <input
                 type="range"
-                min="100"
-                max="250"
-                step="5"
+                min="32"
+                max="180"
+                step="4"
                 value={logoSize}
                 onChange={(e) => setLogoSize(Number(e.target.value))}
                 className="range-input"
               />
             </div>
             
-            <div className="input-group">
-              <label className="input-label">Download Options</label>
-              <div className="download-grid">
-                <button 
-                  onClick={captureScreenshot} 
-                  className="download-btn"
-                  disabled={!videoFile}
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="7 10 12 15 17 10"></polyline>
-                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                  </svg>
-                  Screenshot (PNG)
-                </button>
-                <button 
-                  onClick={downloadVideo} 
-                  className="download-btn"
-                  disabled={!videoFile}
-                  style={{ background: '#4b5563' }}
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="7 10 12 15 17 10"></polyline>
-                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                  </svg>
-                  Video (MP4)
-                </button>
-              </div>
-              <p className="help-text" style={{ marginTop: '8px', textAlign: 'left', maxWidth: 'none' }}>
-                Note: The MP4 option downloads the original video without overlays. For video with overlays, use a video editor.
-              </p>
-            </div>
-            
             <div className="spacer"></div>
+            
+            <button 
+              onClick={captureScreenshot} 
+              className="download-btn"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              Download Video
+            </button>
           </div>
           
           {/* Preview */}
@@ -500,6 +462,12 @@ DOCTYPE html>
             <div 
               ref={frameRef}
               className="video-frame"
+              style={{ 
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: videoFile ? '0' : '20px'
+              }}
             >
               {videoFile ? (
                 <div className="video-wrapper">
@@ -515,7 +483,7 @@ DOCTYPE html>
                   
                   {/* Show sample text position */}
                   {text && (
-                    <div style={{ color: textColor, fontSize: ${textSize}px, margin: '20px 0', textAlign: 'center', fontWeight: 'bold', textShadow: '1px 1px 3px rgba(0,0,0,0.8)' }}>
+                    <div style={{ color: textColor, fontSize: `${textSize}px`, margin: '20px 0', textAlign: 'center', fontWeight: 'bold', textShadow: '1px 1px 3px rgba(0,0,0,0.8)' }}>
                       {text}
                     </div>
                   )}
@@ -523,7 +491,7 @@ DOCTYPE html>
                   {/* Show sample logo position */}
                   <img 
                     src={logo}
-                    style={{ width: ${logoSize}px, marginTop: '20px' }}
+                    style={{ width: `${logoSize}px`, marginTop: '20px' }}
                     alt="Logo" 
                     onError={(e) => {
                       console.error('Logo failed to load');
