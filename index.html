@@ -1,13 +1,4 @@
-<!-- Helper function for FFmpeg -->
-  <script>
-    // Helper function to create FFmpeg instance
-    function createFFmpeg(options) {
-      if (!window.FFmpeg) {
-        throw new Error("FFmpeg library not loaded");
-      }
-      return new FFmpeg.createFFmpeg(options);
-    }
-  </script>          // Add each frame to the GIF
+<script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js" crossorigin></script>          // Add each frame to the GIF
           const addFramesToGif = (index) => {
             if (index >= frames.length) {
               // All frames added, render the GIF
@@ -68,10 +59,19 @@
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/babel-standalone@6/babel.min.js" crossorigin></script>
-  <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js" crossorigin></script>
-  <!-- FFMPEG for MP4 encoding -->
+  <!-- FFmpeg for MP4 encoding -->
   <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.0/dist/index.min.js"></script>
+  <!-- Helper function for FFmpeg -->
+  <script>
+    // Helper function to create FFmpeg instance
+    function createFFmpeg(options) {
+      if (!window.FFmpeg) {
+        throw new Error("FFmpeg library not loaded");
+      }
+      return new window.FFmpeg.createFFmpeg(options);
+    }
+  </script>
   <style>
     /* Reset and base styles */
     *, *::before, *::after {
