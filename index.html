@@ -167,59 +167,21 @@
       align-items: center;
     }
     
-    /* Main content area */
-    .content-container {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      height: 100%;
-    }
-    
-    /* Video container */
-    .video-container {
+    /* Video wrapper */
+    .video-wrapper {
       position: relative;
       display: flex;
       justify-content: center;
       align-items: center;
+      max-width: 100%;
+      max-height: 100%;
     }
     
     /* Video element */
     .video-element {
       max-width: 100%;
-      max-height: calc(100% - 70px); /* Allow space for text and logo */
-      object-fit: contain;
-    }
-    
-    /* Text overlay - dynamically positioned 10px above video */
-    .text-overlay {
-      position: absolute;
-      width: 100%;
-      text-align: center;
-      font-weight: 700;
-      padding: 0 10px;
-      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
-      z-index: 10;
-      word-break: break-word;
-      bottom: 100%; /* Position at the bottom of its container */
-      margin-bottom: 10px; /* Space above the video */
-    }
-    
-    /* Logo overlay - dynamically positioned 10px below video */
-    .logo-container {
-      position: absolute;
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      z-index: 10;
-      top: 100%; /* Position at the top of its container */
-      margin-top: 10px; /* Space below the video */
-    }
-    
-    .logo-image {
-      max-width: 80%;
+      max-height: 100%;
+      display: block;
     }
     
     /* Placeholder content */
@@ -254,6 +216,11 @@
     .spacer {
       flex-grow: 1;
     }
+    
+    /* Debug outline (remove in production) */
+    .debug-outline {
+      outline: 1px solid rgba(255, 0, 0, 0.2);
+    }
   </style>
 </head>
 <body>
@@ -268,13 +235,32 @@
       const [textSize, setTextSize] = React.useState(17);
       const [logoSize, setLogoSize] = React.useState(120);
       const [showControls, setShowControls] = React.useState(true);
+      const [videoHeight, setVideoHeight] = React.useState(0);
+      const [videoWidth, setVideoWidth] = React.useState(0);
       
       const videoRef = React.useRef(null);
       const frameRef = React.useRef(null);
       
-      // Use your own logo URL here - host it somewhere reliable
-      // Using the uploaded logo file in the same repository
+      // Your logo file
       const logo = "./sportsbets glow tran.png";
+      
+      // Update video dimensions when metadata loads
+      React.useEffect(() => {
+        if (videoRef.current && videoFile) {
+          const updateDimensions = () => {
+            setVideoWidth(videoRef.current.videoWidth);
+            setVideoHeight(videoRef.current.videoHeight);
+          };
+          
+          videoRef.current.addEventListener('loadedmetadata', updateDimensions);
+          
+          return () => {
+            if (videoRef.current) {
+              videoRef.current.removeEventListener('loadedmetadata', updateDimensions);
+            }
+          };
+        }
+      }, [videoFile]);
       
       const handleVideoUpload = (e) => {
         const file = e.target.files[0];
@@ -308,6 +294,69 @@
             alert("Screenshot failed. Please try again.");
           });
         }, 100);
+      };
+      
+      // Custom component for the video with overlays
+      const VideoWithOverlays = () => {
+        return (
+          <div style={{ position: 'relative' }}>
+            {/* The video element */}
+            <video 
+              ref={videoRef}
+              src={videoFile}
+              className="video-element"
+              controls={showControls} 
+              muted 
+              loop
+              autoPlay
+            />
+            
+            {/* Text overlay - exactly 10px above the video */}
+            {text && (
+              <div 
+                style={{
+                  position: 'absolute',
+                  width: '100%',
+                  textAlign: 'center',
+                  fontWeight: 'bold',
+                  color: textColor,
+                  fontSize: `${textSize}px`,
+                  textShadow: '1px 1px 3px rgba(0,0,0,0.8)',
+                  bottom: '100%',
+                  marginBottom: '10px', // Exactly 10px above video
+                  zIndex: 10,
+                  wordBreak: 'break-word',
+                  padding: '0 5px'
+                }}
+              >
+                {text}
+              </div>
+            )}
+            
+            {/* Logo overlay - exactly 10px below the video */}
+            <div 
+              style={{
+                position: 'absolute',
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                top: '100%',
+                marginTop: '10px', // Exactly 10px below video
+                zIndex: 10
+              }}
+            >
+              <img 
+                src={logo}
+                style={{ width: `${logoSize}px` }}
+                alt="Logo" 
+                onError={(e) => {
+                  console.error('Logo failed to load');
+                  e.target.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22250%22%20height%3D%22100%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22250%22%20height%3D%22100%22%20fill%3D%22%23eee%22%2F%3E%3Ctext%20x%3D%22125%22%20y%3D%2250%22%20font-size%3D%2216%22%20text-anchor%3D%22middle%22%20alignment-baseline%3D%22middle%22%20fill%3D%22%23aaa%22%3ELogo%3C%2Ftext%3E%3C%2Fsvg%3E';
+                }}
+              />
+            </div>
+          </div>
+        );
       };
       
       return (
@@ -403,76 +452,37 @@
               ref={frameRef}
               className="video-frame"
             >
-              {/* Content container */}
-              <div className="content-container">
-                {/* Video container or placeholder */}
-                {videoFile ? (
-                  <div className="video-container">
-                    {/* Text overlay - positioned 10px above the video */}
-                    {text && (
-                      <div 
-                        className="text-overlay"
-                        style={{
-                          color: textColor,
-                          fontSize: `${textSize}px`,
-                        }}
-                      >
-                        {text}
-                      </div>
-                    )}
-                    
-                    <video 
-                      ref={videoRef}
-                      src={videoFile}
-                      className="video-element" 
-                      controls={showControls} 
-                      muted 
-                      loop
-                      autoPlay
-                    />
-                    
-                    {/* Logo overlay - positioned 10px below the video */}
-                    <div className="logo-container">
-                      <img 
-                        src={logo}
-                        className="logo-image"
-                        style={{ width: `${logoSize}px` }}
-                        alt="Logo" 
-                        onError={(e) => {
-                          console.error('Logo failed to load');
-                          e.target.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22250%22%20height%3D%22100%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22250%22%20height%3D%22100%22%20fill%3D%22%23eee%22%2F%3E%3Ctext%20x%3D%22125%22%20y%3D%2250%22%20font-size%3D%2216%22%20text-anchor%3D%22middle%22%20alignment-baseline%3D%22middle%22%20fill%3D%22%23aaa%22%3ELogo%3C%2Ftext%3E%3C%2Fsvg%3E';
-                        }}
-                      />
+              {videoFile ? (
+                <div className="video-wrapper">
+                  <VideoWithOverlays />
+                </div>
+              ) : (
+                <div className="placeholder-container">
+                  <svg className="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                  </svg>
+                  <p>Upload a video to see preview</p>
+                  
+                  {/* Show sample text position */}
+                  {text && (
+                    <div style={{ color: textColor, fontSize: `${textSize}px`, margin: '20px 0', textAlign: 'center', fontWeight: 'bold', textShadow: '1px 1px 3px rgba(0,0,0,0.8)' }}>
+                      {text}
                     </div>
-                  </div>
-                ) : (
-                  <div className="placeholder-container">
-                    <svg className="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                      <polygon points="23 7 16 12 23 17 23 7"></polygon>
-                      <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
-                    </svg>
-                    <p>Upload a video to see preview</p>
-                    
-                    {/* Show sample text position */}
-                    {text && (
-                      <div style={{ color: textColor, fontSize: `${textSize}px`, margin: '20px 0', textAlign: 'center', fontWeight: 'bold', textShadow: '1px 1px 3px rgba(0,0,0,0.8)' }}>
-                        {text}
-                      </div>
-                    )}
-                    
-                    {/* Show sample logo position */}
-                    <img 
-                      src={logo}
-                      style={{ width: `${logoSize}px`, marginTop: '20px' }}
-                      alt="Logo" 
-                      onError={(e) => {
-                        console.error('Logo failed to load');
-                        e.target.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22250%22%20height%3D%22100%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22250%22%20height%3D%22100%22%20fill%3D%22%23eee%22%2F%3E%3Ctext%20x%3D%22125%22%20y%3D%2250%22%20font-size%3D%2216%22%20text-anchor%3D%22middle%22%20alignment-baseline%3D%22middle%22%20fill%3D%22%23aaa%22%3ELogo%3C%2Ftext%3E%3C%2Fsvg%3E';
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
+                  )}
+                  
+                  {/* Show sample logo position */}
+                  <img 
+                    src={logo}
+                    style={{ width: `${logoSize}px`, marginTop: '20px' }}
+                    alt="Logo" 
+                    onError={(e) => {
+                      console.error('Logo failed to load');
+                      e.target.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22250%22%20height%3D%22100%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22250%22%20height%3D%22100%22%20fill%3D%22%23eee%22%2F%3E%3Ctext%20x%3D%22125%22%20y%3D%2250%22%20font-size%3D%2216%22%20text-anchor%3D%22middle%22%20alignment-baseline%3D%22middle%22%20fill%3D%22%23aaa%22%3ELogo%3C%2Ftext%3E%3C%2Fsvg%3E';
+                    }}
+                  />
+                </div>
+              )}
             </div>
             
             <p className="help-text">
