@@ -138,49 +138,12 @@
       background: #1d4ed8;
     }
     
-    .download-btn:disabled {
-      background: #9db6ec;
-      cursor: not-allowed;
-    }
-    
     /* Download options grid */
     .download-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
       margin-top: 10px;
-    }
-    
-    /* Processing overlay */
-    .processing-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.7);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      color: white;
-    }
-    
-    .progress-container {
-      width: 300px;
-      height: 10px;
-      background: #374151;
-      border-radius: 5px;
-      overflow: hidden;
-      margin: 20px 0;
-    }
-    
-    .progress-bar {
-      height: 100%;
-      background: #2563eb;
-      width: 0;
-      transition: width 0.3s;
     }
     
     /* Preview area */
@@ -207,6 +170,7 @@
       overflow: hidden;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
     }
@@ -214,19 +178,18 @@
     /* Video wrapper */
     .video-wrapper {
       position: relative;
-      width: 100%;
-      height: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
+      max-width: 100%;
+      max-height: 100%;
     }
     
     /* Video element */
     .video-element {
-      display: block;
-      width: 100%;
+      max-width: 100%;
       max-height: 100%;
-      object-fit: contain;
+      display: block;
     }
     
     /* Placeholder content */
@@ -262,58 +225,9 @@
       flex-grow: 1;
     }
     
-    /* Modal dialog */
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-    
-    .modal-content {
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      padding: 20px;
-      max-width: 500px;
-      width: 90%;
-    }
-    
-    .modal-title {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 10px;
-    }
-    
-    .modal-buttons {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-top: 20px;
-    }
-    
-    .modal-btn {
-      padding: 8px 16px;
-      border-radius: 6px;
-      font-weight: 500;
-      cursor: pointer;
-      border: none;
-    }
-    
-    .modal-btn-primary {
-      background: #2563eb;
-      color: white;
-    }
-    
-    .modal-btn-secondary {
-      background: #e5e7eb;
-      color: #374151;
+    /* Debug outline (remove in production) */
+    .debug-outline {
+      outline: 1px solid rgba(255, 0, 0, 0.2);
     }
   </style>
 </head>
@@ -330,19 +244,13 @@
       const [textColor, setTextColor] = React.useState('#FFFFFF');
       const [textSize, setTextSize] = React.useState(17);
       const [logoSize, setLogoSize] = React.useState(200); // Default to 200px
-      const [videoSize, setVideoSize] = React.useState(100); // Default to 100%
       const [showControls, setShowControls] = React.useState(true);
       const [videoHeight, setVideoHeight] = React.useState(0);
       const [videoWidth, setVideoWidth] = React.useState(0);
-      const [isProcessing, setIsProcessing] = React.useState(false);
-      const [progress, setProgress] = React.useState(0);
-      const [showModal, setShowModal] = React.useState(false);
-      const [modalMessage, setModalMessage] = React.useState("");
       
       // Refs
       const videoRef = React.useRef(null);
       const frameRef = React.useRef(null);
-      const progressBarRef = React.useRef(null);
       
       // Your logo file
       const logo = "./sportsbets glow tran.png";
@@ -356,23 +264,14 @@
           };
           
           videoRef.current.addEventListener('loadedmetadata', updateDimensions);
-          videoRef.current.addEventListener('loadeddata', updateDimensions);
           
           return () => {
             if (videoRef.current) {
               videoRef.current.removeEventListener('loadedmetadata', updateDimensions);
-              videoRef.current.removeEventListener('loadeddata', updateDimensions);
             }
           };
         }
       }, [videoFile]);
-      
-      // Update progress bar width
-      React.useEffect(() => {
-        if (progressBarRef.current) {
-          progressBarRef.current.style.width = `${progress}%`;
-        }
-      }, [progress]);
       
       const handleVideoUpload = (e) => {
         const file = e.target.files[0];
@@ -410,7 +309,7 @@
       };
       
       // Download original video
-      const downloadOriginalVideo = () => {
+      const downloadVideo = () => {
         if (!videoFile) {
           alert("Please upload a video first.");
           return;
@@ -424,68 +323,10 @@
         document.body.removeChild(link);
       };
       
-      // Simulate processing and downloading a video with overlays
-      const downloadProcessedVideo = () => {
-        if (!videoFile) {
-          alert("Please upload a video first.");
-          return;
-        }
-        
-        setIsProcessing(true);
-        setProgress(0);
-        
-        // Simulate video processing with progress updates
-        let currentProgress = 0;
-        const interval = setInterval(() => {
-          currentProgress += 5;
-          setProgress(currentProgress);
-          
-          if (currentProgress >= 100) {
-            clearInterval(interval);
-            
-            // Capture current frame
-            html2canvas(frameRef.current).then(canvas => {
-              // Convert to data URL
-              const screenshotUrl = canvas.toDataURL('image/png');
-              
-              // Show completion modal with preview
-              setModalMessage(`
-                <p>Video processing complete! Here's what your video will look like:</p>
-                <div style="margin: 15px 0; text-align: center;">
-                  <img src="${screenshotUrl}" style="max-width: 100%; max-height: 300px; border-radius: 4px;" />
-                </div>
-                <p>In a real-world implementation, this would be a video file with your overlays.</p>
-                <p>For now, you can download:</p>
-                <ul style="margin-left: 20px; margin-top: 10px;">
-                  <li>A screenshot of your video with overlays</li>
-                  <li>The original video file</li>
-                </ul>
-              `);
-              setShowModal(true);
-              setIsProcessing(false);
-            });
-          }
-        }, 150);
-      };
-      
       // Custom component for the video with overlays
       const VideoWithOverlays = () => {
-        const [isVideoReady, setIsVideoReady] = React.useState(false);
-
-        // Additional event handlers to ensure video is ready
-        const handleVideoLoad = () => {
-          setIsVideoReady(true);
-        };
-
         return (
-          <div style={{ 
-            position: 'relative',
-            width: '100%', 
-            height: '100%',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center'
-          }}>
+          <div style={{ position: 'relative' }}>
             {/* The video element */}
             <video 
               ref={videoRef}
@@ -495,16 +336,10 @@
               muted 
               loop
               autoPlay
-              style={{
-                width: `${videoSize}%`,
-                maxHeight: '100%'
-              }}
-              onLoadedMetadata={handleVideoLoad}
-              onLoadedData={handleVideoLoad}
             />
             
             {/* Text overlay - exactly 10px above the video */}
-            {text && isVideoReady && (
+            {text && (
               <div 
                 style={{
                   position: 'absolute',
@@ -514,8 +349,8 @@
                   color: textColor,
                   fontSize: `${textSize}px`,
                   textShadow: '1px 1px 3px rgba(0,0,0,0.8)',
-                  top: '0',
-                  paddingTop: '10px',
+                  bottom: '100%',
+                  marginBottom: '10px', // Exactly 10px above video
                   zIndex: 10,
                   wordBreak: 'break-word',
                   padding: '0 5px'
@@ -526,69 +361,27 @@
             )}
             
             {/* Logo overlay - exactly 10px below the video */}
-            {isVideoReady && (
-              <div 
-                style={{
-                  position: 'absolute',
-                  width: '100%',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  bottom: '0',
-                  paddingBottom: '10px',
-                  zIndex: 10
+            <div 
+              style={{
+                position: 'absolute',
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                top: '100%',
+                marginTop: '10px', // Exactly 10px below video
+                zIndex: 10
+              }}
+            >
+              <img 
+                src={logo}
+                style={{ width: `${logoSize}px` }}
+                alt="Logo" 
+                onError={(e) => {
+                  console.error('Logo failed to load');
+                  e.target.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22250%22%20height%3D%22100%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22250%22%20height%3D%22100%22%20fill%3D%22%23eee%22%2F%3E%3Ctext%20x%3D%22125%22%20y%3D%2250%22%20font-size%3D%2216%22%20text-anchor%3D%22middle%22%20alignment-baseline%3D%22middle%22%20fill%3D%22%23aaa%22%3ELogo%3C%2Ftext%3E%3C%2Fsvg%3E';
                 }}
-              >
-                <img 
-                  src={logo}
-                  style={{ width: `${logoSize}px` }}
-                  alt="Logo" 
-                  onError={(e) => {
-                    console.error('Logo failed to load');
-                    e.target.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22250%22%20height%3D%22100%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22250%22%20height%3D%22100%22%20fill%3D%22%23eee%22%2F%3E%3Ctext%20x%3D%22125%22%20y%3D%2250%22%20font-size%3D%2216%22%20text-anchor%3D%22middle%22%20alignment-baseline%3D%22middle%22%20fill%3D%22%23aaa%22%3ELogo%3C%2Ftext%3E%3C%2Fsvg%3E';
-                  }}
-                />
-              </div>
-            )}
-          </div>
-        );
-      };
-      
-      // Modal component
-      const Modal = ({ show, message, onClose }) => {
-        if (!show) return null;
-        
-        return (
-          <div className="modal">
-            <div className="modal-content">
-              <div className="modal-title">Video Processing</div>
-              <div dangerouslySetInnerHTML={{ __html: message }}></div>
-              <div className="modal-buttons">
-                <button className="modal-btn modal-btn-secondary" onClick={() => downloadOriginalVideo()}>
-                  Download Original Video
-                </button>
-                <button className="modal-btn modal-btn-primary" onClick={() => { captureScreenshot(); onClose(); }}>
-                  Download Screenshot
-                </button>
-                <button className="modal-btn modal-btn-secondary" onClick={onClose}>
-                  Close
-                </button>
-              </div>
+              />
             </div>
-          </div>
-        );
-      };
-      
-      // Processing overlay component
-      const ProcessingOverlay = ({ show, progress }) => {
-        if (!show) return null;
-        
-        return (
-          <div className="processing-overlay">
-            <h2>Processing Video...</h2>
-            <div className="progress-container">
-              <div className="progress-bar" ref={progressBarRef}></div>
-            </div>
-            <p>{progress}% Complete</p>
           </div>
         );
       };
@@ -608,7 +401,6 @@
                 accept="video/*" 
                 onChange={handleVideoUpload}
                 className="file-input" 
-                disabled={isProcessing}
               />
             </div>
             
@@ -620,7 +412,6 @@
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 className="text-input"
-                disabled={isProcessing}
               />
             </div>
             
@@ -633,7 +424,6 @@
                     value={textColor}
                     onChange={(e) => setTextColor(e.target.value)}
                     className="color-input"
-                    disabled={isProcessing}
                   />
                   <span className="color-display">{textColor}</span>
                 </div>
@@ -648,7 +438,6 @@
                   value={textSize}
                   onChange={(e) => setTextSize(Number(e.target.value))}
                   className="range-input"
-                  disabled={isProcessing}
                 />
               </div>
             </div>
@@ -663,28 +452,8 @@
                 value={logoSize}
                 onChange={(e) => setLogoSize(Number(e.target.value))}
                 className="range-input"
-                disabled={isProcessing}
               />
             </div>
-            
-            <div className="input-group">
-              <label className="input-label">Video Size: {videoSize}%</label>
-              <input
-                type="range"
-                min="50"
-                max="100"
-                step="5"
-                value={videoSize}
-                onChange={(e) => setVideoSize(Number(e.target.value))}
-                className="range-input"
-                disabled={isProcessing}
-              />
-              <p className="help-text" style={{ marginTop: '4px', textAlign: 'left', maxWidth: 'none' }}>
-                Adjust video size within the frame while maintaining aspect ratio.
-              </p>
-            </div>
-            
-            <div className="spacer"></div>
             
             <div className="input-group">
               <label className="input-label">Download Options</label>
@@ -692,30 +461,35 @@
                 <button 
                   onClick={captureScreenshot} 
                   className="download-btn"
-                  disabled={!videoFile || isProcessing}
+                  disabled={!videoFile}
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                     <polyline points="7 10 12 15 17 10"></polyline>
                     <line x1="12" y1="15" x2="12" y2="3"></line>
                   </svg>
-                  Download PNG
+                  Screenshot (PNG)
                 </button>
                 <button 
-                  onClick={downloadProcessedVideo} 
+                  onClick={downloadVideo} 
                   className="download-btn"
+                  disabled={!videoFile}
                   style={{ background: '#4b5563' }}
-                  disabled={!videoFile || isProcessing}
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                     <polyline points="7 10 12 15 17 10"></polyline>
                     <line x1="12" y1="15" x2="12" y2="3"></line>
                   </svg>
-                  Download MP4
+                  Video (MP4)
                 </button>
               </div>
+              <p className="help-text" style={{ marginTop: '8px', textAlign: 'left', maxWidth: 'none' }}>
+                Note: The MP4 option downloads the original video without overlays. For video with overlays, use a video editor.
+              </p>
             </div>
+            
+            <div className="spacer"></div>
           </div>
           
           {/* Preview */}
@@ -726,12 +500,6 @@
             <div 
               ref={frameRef}
               className="video-frame"
-              style={{ 
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: videoFile ? '0' : '20px'
-              }}
             >
               {videoFile ? (
                 <div className="video-wrapper">
@@ -767,19 +535,9 @@
             </div>
             
             <p className="help-text">
-              Video shown in 16:9 vertical frame. Text appears at the top and logo at the bottom.
+              Video shown in 16:9 vertical frame. Text appears exactly 10px above the video and logo 10px below.
             </p>
           </div>
-          
-          {/* Processing overlay */}
-          <ProcessingOverlay show={isProcessing} progress={progress} />
-          
-          {/* Modal dialog */}
-          <Modal 
-            show={showModal} 
-            message={modalMessage} 
-            onClose={() => setShowModal(false)} 
-          />
         </div>
       );
     };
