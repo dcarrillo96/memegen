@@ -233,7 +233,7 @@
       const [text, setText] = React.useState('Sample Overlay Text');
       const [textColor, setTextColor] = React.useState('#FFFFFF');
       const [textSize, setTextSize] = React.useState(17);
-      const [logoSize, setLogoSize] = React.useState(200); // Default to 200px
+      const [logoSize, setLogoSize] = React.useState(120);
       const [showControls, setShowControls] = React.useState(true);
       const [videoHeight, setVideoHeight] = React.useState(0);
       const [videoWidth, setVideoWidth] = React.useState(0);
@@ -250,21 +250,13 @@
           const updateDimensions = () => {
             setVideoWidth(videoRef.current.videoWidth);
             setVideoHeight(videoRef.current.videoHeight);
-            console.log("Video dimensions updated:", videoRef.current.videoWidth, videoRef.current.videoHeight);
           };
           
           videoRef.current.addEventListener('loadedmetadata', updateDimensions);
-          videoRef.current.addEventListener('loadeddata', updateDimensions);
-          
-          // Also try to get dimensions if already loaded
-          if (videoRef.current.readyState >= 2) {
-            updateDimensions();
-          }
           
           return () => {
             if (videoRef.current) {
               videoRef.current.removeEventListener('loadedmetadata', updateDimensions);
-              videoRef.current.removeEventListener('loadeddata', updateDimensions);
             }
           };
         }
@@ -306,19 +298,6 @@
       
       // Custom component for the video with overlays
       const VideoWithOverlays = () => {
-        const [videoDimensions, setVideoDimensions] = React.useState({width: 0, height: 0});
-        const [isVideoReady, setIsVideoReady] = React.useState(false);
-
-        // Additional event handlers to ensure video is ready
-        const handleVideoLoad = () => {
-          console.log("Video loaded!");
-          setIsVideoReady(true);
-          setVideoDimensions({
-            width: videoRef.current?.videoWidth || 0,
-            height: videoRef.current?.videoHeight || 0
-          });
-        };
-
         return (
           <div style={{ 
             position: 'relative',
@@ -341,12 +320,10 @@
                 width: '100%',
                 objectFit: 'contain' 
               }}
-              onLoadedMetadata={handleVideoLoad}
-              onLoadedData={handleVideoLoad}
             />
             
             {/* Text overlay - exactly 10px above the video */}
-            {text && isVideoReady && (
+            {text && (
               <div 
                 style={{
                   position: 'absolute',
@@ -356,8 +333,8 @@
                   color: textColor,
                   fontSize: `${textSize}px`,
                   textShadow: '1px 1px 3px rgba(0,0,0,0.8)',
-                  top: '0',
-                  paddingTop: '10px',
+                  bottom: '100%',
+                  marginBottom: '10px', // Exactly 10px above video
                   zIndex: 10,
                   wordBreak: 'break-word',
                   padding: '0 5px'
@@ -368,29 +345,27 @@
             )}
             
             {/* Logo overlay - exactly 10px below the video */}
-            {isVideoReady && (
-              <div 
-                style={{
-                  position: 'absolute',
-                  width: '100%',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  bottom: '0',
-                  paddingBottom: '10px',
-                  zIndex: 10
+            <div 
+              style={{
+                position: 'absolute',
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                top: '100%',
+                marginTop: '10px', // Exactly 10px below video
+                zIndex: 10
+              }}
+            >
+              <img 
+                src={logo}
+                style={{ width: `${logoSize}px` }}
+                alt="Logo" 
+                onError={(e) => {
+                  console.error('Logo failed to load');
+                  e.target.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22250%22%20height%3D%22100%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22250%22%20height%3D%22100%22%20fill%3D%22%23eee%22%2F%3E%3Ctext%20x%3D%22125%22%20y%3D%2250%22%20font-size%3D%2216%22%20text-anchor%3D%22middle%22%20alignment-baseline%3D%22middle%22%20fill%3D%22%23aaa%22%3ELogo%3C%2Ftext%3E%3C%2Fsvg%3E';
                 }}
-              >
-                <img 
-                  src={logo}
-                  style={{ width: `${logoSize}px` }}
-                  alt="Logo" 
-                  onError={(e) => {
-                    console.error('Logo failed to load');
-                    e.target.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22250%22%20height%3D%22100%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22250%22%20height%3D%22100%22%20fill%3D%22%23eee%22%2F%3E%3Ctext%20x%3D%22125%22%20y%3D%2250%22%20font-size%3D%2216%22%20text-anchor%3D%22middle%22%20alignment-baseline%3D%22middle%22%20fill%3D%22%23aaa%22%3ELogo%3C%2Ftext%3E%3C%2Fsvg%3E';
-                  }}
-                />
-              </div>
-            )}
+              />
+            </div>
           </div>
         );
       };
@@ -455,9 +430,9 @@
               <label className="input-label">Logo Size: {logoSize}px</label>
               <input
                 type="range"
-                min="100"
-                max="250"
-                step="5"
+                min="32"
+                max="180"
+                step="4"
                 value={logoSize}
                 onChange={(e) => setLogoSize(Number(e.target.value))}
                 className="range-input"
