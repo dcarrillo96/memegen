@@ -4,305 +4,98 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Video Overlay App</title>
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react@17/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/babel-standalone@6/babel.min.js" crossorigin></script>
-  <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js" crossorigin></script>
+  <script src="https://unpkg.com/html2canvas@1.3.2/dist/html2canvas.min.js" crossorigin></script>
   <style>
-    /* Reset and base styles */
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    
+    /* Basic styles */
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-      color: #333;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
       background: #f5f5f5;
     }
     
-    /* App container */
-    #video-overlay-app {
+    .container {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 20px;
-    }
-    
-    .app-container {
       display: flex;
       flex-direction: column;
-      gap: 24px;
+      gap: 20px;
     }
     
-    @media (min-width: 1024px) {
-      .app-container {
+    @media (min-width: 768px) {
+      .container {
         flex-direction: row;
-        align-items: flex-start;
       }
     }
     
-    /* Controls panel */
-    .controls-panel {
+    .controls {
       flex: 1;
       background: white;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      min-height: 580px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
     
-    .panel-header {
-      border-bottom: 1px solid #e5e7eb;
-      padding-bottom: 12px;
-      margin-bottom: 16px;
-    }
-    
-    .panel-title {
-      font-size: 20px;
-      font-weight: 700;
-    }
-    
-    .input-group {
-      margin-bottom: 16px;
-    }
-    
-    .input-label {
-      display: block;
-      font-size: 14px;
-      font-weight: 500;
-      margin-bottom: 6px;
-    }
-    
-    .text-input, 
-    .file-input {
-      width: 100%;
-      padding: 8px 12px;
-      border: 1px solid #d1d5db;
-      border-radius: 6px;
-      font-size: 14px;
-    }
-    
-    .range-input {
-      width: 100%;
-    }
-    
-    .range-label {
-      display: flex;
-      justify-content: space-between;
-      font-size: 12px;
-    }
-    
-    .color-input {
-      width: 40px;
-      height: 40px;
-      padding: 0;
-      border: 0;
-    }
-    
-    .color-display {
-      font-size: 12px;
-      margin-left: 8px;
-    }
-    
-    .color-container {
-      display: flex;
-      align-items: center;
-    }
-    
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-    
-    .download-btn {
-      background: #2563eb;
-      color: white;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 6px;
-      font-weight: 500;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      margin-top: auto;
-    }
-    
-    .download-btn:hover {
-      background: #1d4ed8;
-    }
-    
-    /* Download options */
-    .download-options {
-      margin-top: 10px;
-    }
-    
-    .download-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 5px;
-    }
-    
-    .download-btn-small {
-      background: #2563eb;
-      color: white;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-    
-    .download-btn-small:hover {
-      background: #1d4ed8;
-    }
-    
-    .download-btn-small.secondary {
-      background: #4b5563;
-    }
-    
-    .download-btn-small.secondary:hover {
-      background: #374151;
-    }
-    
-    /* Preview area */
-    .preview-container {
+    .preview {
       flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
     
-    .preview-title {
-      font-size: 18px;
-      font-weight: 500;
-      margin-bottom: 8px;
-    }
-    
-    /* Frame container */
     .video-frame {
-      position: relative;
       width: 320px;
-      height: 570px; /* 16:9 vertical aspect ratio based on 320px width */
-      background: #000;
+      height: 570px;
+      background: black;
       border-radius: 8px;
       overflow: hidden;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    }
-    
-    /* Video wrapper */
-    .video-wrapper {
       position: relative;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-      height: 100%;
     }
     
-    /* Video element */
-    .video-element {
-      width: 100%; /* Fill the frame width */
-      height: auto; /* Maintain aspect ratio */
+    .title {
+      font-size: 24px;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    input, button {
+      margin-bottom: 15px;
+    }
+    
+    label {
       display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
     }
     
-    /* Placeholder content */
-    .placeholder-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      width: 100%;
-      color: #9ca3af;
-      text-align: center;
-      padding: 20px;
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 20px;
     }
     
-    .placeholder-icon {
-      width: 48px;
-      height: 48px;
-      margin-bottom: 12px;
-    }
-    
-    /* Help text */
-    .help-text {
-      font-size: 12px;
-      color: #6b7280;
-      margin-top: 16px;
-      text-align: center;
-      max-width: 300px;
-    }
-    
-    /* Push content to bottom */
-    .spacer {
-      flex-grow: 1;
+    button:hover {
+      background: #1d4ed8;
     }
   </style>
 </head>
 <body>
-  <div id="video-overlay-app"></div>
+  <div id="app"></div>
 
   <script type="text/babel">
-    // Main app component
-    const VideoOverlayApp = () => {
+    function App() {
       const [videoFile, setVideoFile] = React.useState(null);
-      const [text, setText] = React.useState('Sample Overlay Text');
-      const [textColor, setTextColor] = React.useState('#FFFFFF');
-      const [textSize, setTextSize] = React.useState(17);
-      const [logoSize, setLogoSize] = React.useState(200); // Default to 200px
-      const [showControls, setShowControls] = React.useState(true);
-      const [videoHeight, setVideoHeight] = React.useState(0);
-      const [videoWidth, setVideoWidth] = React.useState(0);
-      
-      const videoRef = React.useRef(null);
+      const [text, setText] = React.useState("Sample Text");
       const frameRef = React.useRef(null);
-      
-      // Your logo file
-      const logo = "./sportsbets glow tran.png";
-      
-      // Update video dimensions when metadata loads
-      React.useEffect(() => {
-        if (videoRef.current && videoFile) {
-          const updateDimensions = () => {
-            setVideoWidth(videoRef.current.videoWidth);
-            setVideoHeight(videoRef.current.videoHeight);
-            console.log("Video dimensions updated:", videoRef.current.videoWidth, videoRef.current.videoHeight);
-          };
-          
-          videoRef.current.addEventListener('loadedmetadata', updateDimensions);
-          videoRef.current.addEventListener('loadeddata', updateDimensions);
-          
-          // Also try to get dimensions if already loaded
-          if (videoRef.current.readyState >= 2) {
-            updateDimensions();
-          }
-          
-          return () => {
-            if (videoRef.current) {
-              videoRef.current.removeEventListener('loadedmetadata', updateDimensions);
-              videoRef.current.removeEventListener('loadeddata', updateDimensions);
-            }
-          };
-        }
-      }, [videoFile]);
       
       const handleVideoUpload = (e) => {
         const file = e.target.files[0];
@@ -312,306 +105,108 @@
       };
       
       const captureScreenshot = () => {
-        if (!window.html2canvas) {
-          alert("Screenshot library not loaded. Please refresh and try again.");
-          return;
-        }
+        if (!frameRef.current) return;
         
-        // Hide video controls before capture
-        setShowControls(false);
-        
-        // Wait for state update to propagate
-        setTimeout(() => {
-          html2canvas(frameRef.current).then(canvas => {
-            const link = document.createElement('a');
-            link.download = 'video-overlay.png';
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-            
-            // Restore controls
-            setShowControls(true);
-          }).catch(err => {
-            console.error("Screenshot failed:", err);
-            setShowControls(true);
-            alert("Screenshot failed. Please try again.");
-          });
-        }, 100);
-      };
-      
-      const downloadOriginalVideo = () => {
-        if (videoFile) {
-          // Create a link to download the original video
+        html2canvas(frameRef.current).then(canvas => {
           const link = document.createElement('a');
-          link.href = videoFile;
-          link.download = 'original-video.mp4';
+          link.download = 'screenshot.png';
+          link.href = canvas.toDataURL('image/png');
           link.click();
-        }
-      };
-      
-      // Custom component for the video with overlays
-      const VideoWithOverlays = () => {
-        const [videoDimensions, setVideoDimensions] = React.useState({width: 0, height: 0});
-        const [isVideoReady, setIsVideoReady] = React.useState(false);
-
-        // Additional event handlers to ensure video is ready
-        const handleVideoLoad = () => {
-          console.log("Video loaded!");
-          setIsVideoReady(true);
-          setVideoDimensions({
-            width: videoRef.current?.videoWidth || 0,
-            height: videoRef.current?.videoHeight || 0
-          });
-        };
-
-        return (
-          <div style={{ 
-            position: 'relative',
-            width: '100%', 
-            height: '100%',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center'
-          }}>
-            {/* The video element */}
-            <video 
-              ref={videoRef}
-              src={videoFile}
-              className="video-element"
-              controls={showControls} 
-              muted 
-              loop
-              autoPlay
-              style={{
-                width: '100%',
-                objectFit: 'contain' 
-              }}
-              onLoadedMetadata={handleVideoLoad}
-              onLoadedData={handleVideoLoad}
-            />
-            
-            {/* Text overlay - exactly 10px above the video */}
-            {text && isVideoReady && (
-              <div 
-                style={{
-                  position: 'absolute',
-                  width: '100%',
-                  textAlign: 'center',
-                  fontWeight: 'bold',
-                  color: textColor,
-                  fontSize: `${textSize}px`,
-                  textShadow: '1px 1px 3px rgba(0,0,0,0.8)',
-                  top: '0',
-                  paddingTop: '10px',
-                  zIndex: 10,
-                  wordBreak: 'break-word',
-                  padding: '0 5px'
-                }}
-              >
-                {text}
-              </div>
-            )}
-            
-            {/* Logo overlay - exactly 10px below the video */}
-            {isVideoReady && (
-              <div 
-                style={{
-                  position: 'absolute',
-                  width: '100%',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  bottom: '0',
-                  paddingBottom: '10px',
-                  zIndex: 10
-                }}
-              >
-                <img 
-                  src={logo}
-                  style={{ width: `${logoSize}px` }}
-                  alt="Logo" 
-                  onError={(e) => {
-                    console.error('Logo failed to load');
-                    e.target.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22250%22%20height%3D%22100%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22250%22%20height%3D%22100%22%20fill%3D%22%23eee%22%2F%3E%3Ctext%20x%3D%22125%22%20y%3D%2250%22%20font-size%3D%2216%22%20text-anchor%3D%22middle%22%20alignment-baseline%3D%22middle%22%20fill%3D%22%23aaa%22%3ELogo%3C%2Ftext%3E%3C%2Fsvg%3E';
-                  }}
-                />
-              </div>
-            )}
-          </div>
-        );
+        });
       };
       
       return (
-        <div className="app-container">
-          {/* Controls Panel */}
-          <div className="controls-panel">
-            <div className="panel-header">
-              <h2 className="panel-title">Video Overlay Editor</h2>
-            </div>
+        <div className="container">
+          <div className="controls">
+            <h1 className="title">Video Overlay App</h1>
             
-            <div className="input-group">
-              <label className="input-label">Upload Video</label>
+            <div>
+              <label>Upload Video</label>
               <input 
                 type="file" 
                 accept="video/*" 
-                onChange={handleVideoUpload}
-                className="file-input" 
+                onChange={handleVideoUpload} 
               />
             </div>
             
-            <div className="input-group">
-              <label className="input-label">Text Overlay</label>
-              <input
-                type="text"
-                placeholder="Enter text overlay..."
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                className="text-input"
+            <div>
+              <label>Text Overlay</label>
+              <input 
+                type="text" 
+                value={text} 
+                onChange={(e) => setText(e.target.value)} 
+                style={{width: "100%", padding: "8px"}}
               />
             </div>
             
-            <div className="grid-2">
-              <div className="input-group">
-                <label className="input-label">Text Color</label>
-                <div className="color-container">
-                  <input
-                    type="color"
-                    value={textColor}
-                    onChange={(e) => setTextColor(e.target.value)}
-                    className="color-input"
-                  />
-                  <span className="color-display">{textColor}</span>
-                </div>
-              </div>
-              
-              <div className="input-group">
-                <label className="input-label">Text Size: {textSize}px</label>
-                <input
-                  type="range"
-                  min="12"
-                  max="48"
-                  value={textSize}
-                  onChange={(e) => setTextSize(Number(e.target.value))}
-                  className="range-input"
-                />
-              </div>
-            </div>
-            
-            <div className="input-group">
-              <label className="input-label">Logo Size: {logoSize}px</label>
-              <input
-                type="range"
-                min="100"
-                max="250"
-                step="5"
-                value={logoSize}
-                onChange={(e) => setLogoSize(Number(e.target.value))}
-                className="range-input"
-              />
-            </div>
-            
-            <div className="download-options">
-              <label className="input-label">Download Options</label>
-              <div className="download-grid">
-                <button 
-                  onClick={captureScreenshot}
-                  className="download-btn-small"
-                  disabled={!videoFile}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="7 10 12 15 17 10"></polyline>
-                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                  </svg>
-                  Download Screenshot
-                </button>
-                
-                <button 
-                  onClick={downloadOriginalVideo}
-                  className="download-btn-small secondary"
-                  disabled={!videoFile}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
-                    <line x1="7" y1="2" x2="7" y2="22"></line>
-                    <line x1="17" y1="2" x2="17" y2="22"></line>
-                    <line x1="2" y1="12" x2="22" y2="12"></line>
-                    <line x1="2" y1="7" x2="7" y2="7"></line>
-                    <line x1="2" y1="17" x2="7" y2="17"></line>
-                    <line x1="17" y1="17" x2="22" y2="17"></line>
-                    <line x1="17" y1="7" x2="22" y2="7"></line>
-                  </svg>
-                  Download Video
-                </button>
-              </div>
-              
-              <p className="help-text" style={{ marginTop: '10px', textAlign: 'left' }}>
-                Note: The video download option saves the original video file. To include overlays, use the screenshot option or a video editor.
-              </p>
-            </div>
-            
-            <div className="spacer"></div>
+            <button onClick={captureScreenshot}>
+              Download Screenshot
+            </button>
           </div>
           
-          {/* Preview */}
-          <div className="preview-container">
-            <h3 className="preview-title">Preview</h3>
+          <div className="preview">
+            <h2>Preview</h2>
             
-            {/* Main frame with 16:9 vertical aspect ratio */}
-            <div 
-              ref={frameRef}
-              className="video-frame"
-              style={{ 
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: videoFile ? '0' : '20px'
-              }}
-            >
+            <div className="video-frame" ref={frameRef}>
               {videoFile ? (
-                <div className="video-wrapper">
-                  <VideoWithOverlays />
-                </div>
-              ) : (
-                <div className="placeholder-container">
-                  <svg className="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                    <polygon points="23 7 16 12 23 17 23 7"></polygon>
-                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
-                  </svg>
-                  <p>Upload a video to see preview</p>
+                <div style={{position: "relative", width: "100%", height: "100%"}}>
+                  <video 
+                    src={videoFile} 
+                    style={{width: "100%", height: "auto"}} 
+                    controls 
+                    autoPlay 
+                    muted
+                  />
                   
-                  {/* Show sample text position */}
                   {text && (
-                    <div style={{ color: textColor, fontSize: `${textSize}px`, margin: '20px 0', textAlign: 'center', fontWeight: 'bold', textShadow: '1px 1px 3px rgba(0,0,0,0.8)' }}>
+                    <div style={{
+                      position: "absolute",
+                      top: "10px",
+                      left: 0,
+                      width: "100%",
+                      textAlign: "center",
+                      color: "white",
+                      fontWeight: "bold",
+                      textShadow: "1px 1px 2px black"
+                    }}>
                       {text}
                     </div>
                   )}
                   
-                  {/* Show sample logo position */}
-                  <img 
-                    src={logo}
-                    style={{ width: `${logoSize}px`, marginTop: '20px' }}
-                    alt="Logo" 
-                    onError={(e) => {
-                      console.error('Logo failed to load');
-                      e.target.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22250%22%20height%3D%22100%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22250%22%20height%3D%22100%22%20fill%3D%22%23eee%22%2F%3E%3Ctext%20x%3D%22125%22%20y%3D%2250%22%20font-size%3D%2216%22%20text-anchor%3D%22middle%22%20alignment-baseline%3D%22middle%22%20fill%3D%22%23aaa%22%3ELogo%3C%2Ftext%3E%3C%2Fsvg%3E';
-                    }}
-                  />
+                  <div style={{
+                    position: "absolute",
+                    bottom: "10px",
+                    left: 0,
+                    width: "100%",
+                    display: "flex",
+                    justifyContent: "center"
+                  }}>
+                    <img 
+                      src="./sportsbets glow tran.png" 
+                      alt="Logo" 
+                      style={{width: "150px"}}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div style={{
+                  display: "flex", 
+                  flexDirection: "column",
+                  alignItems: "center", 
+                  justifyContent: "center",
+                  height: "100%",
+                  color: "#aaa"
+                }}>
+                  <p>Upload a video to see preview</p>
                 </div>
               )}
             </div>
-            
-            <p className="help-text">
-              Video shown in 16:9 vertical frame. Text appears exactly 10px above the video and logo 10px below.
-            </p>
           </div>
         </div>
       );
-    };
-
-    // Render the app
-    ReactDOM.render(
-      <VideoOverlayApp />,
-      document.getElementById('video-overlay-app')
-    );
+    }
+    
+    ReactDOM.render(<App />, document.getElementById('app'));
   </script>
 </body>
 </html>
